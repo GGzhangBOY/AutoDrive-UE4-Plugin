@@ -1,0 +1,41 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Runtime/Engine/Classes/Components/SceneCaptureComponent2D.h"
+#include "Runtime/Engine/Public/TextureResource.h"
+#include "Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h"
+#include "Runtime/Engine/Public/HighResScreenshot.h"
+#include "Runtime/Core/Public/Windows/WindowsPlatformMemory.h"
+#include "CacheDataInterface.h"
+#include "stdio.h"
+#include "vector.h"
+#include "WindowsSharedMemory.h"
+#include "CarCameraActor.generated.h"
+
+UCLASS()
+class TESTPLUGIN_API ACarCameraActor : public AActor
+{
+	GENERATED_BODY()
+private:
+	USceneCaptureComponent2D* captureComponent;
+	void SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget);
+	CacheDataInterface cacheController;
+public:	
+	// Sets default values for this actor's properties
+	UPROPERTY(EditAnywhere)
+		FString randerPath = "";
+	ACarCameraActor();
+	void releaseActorCameraCache();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+};
