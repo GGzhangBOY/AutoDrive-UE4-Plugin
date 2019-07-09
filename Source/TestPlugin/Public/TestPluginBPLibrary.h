@@ -97,8 +97,9 @@ class UTestPluginBPLibrary : public UBlueprintFunctionLibrary
 		static bool AdjustDatasetParameter(ImageFormat imageFormat, int32 imageQuality, OutputColorState imageColorChannel);
 		UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get mesh vertex test", Keywords = " sample test testing"), Category = "TestPluginTesting")
 		static TArray<AActor*> GetStaticMeshVertex(UObject* selfPointer, FString targetFolder, FString optixRendererPath);
-		UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get skeleten mesh vertex test", Keywords = " sample test testing"), Category = "TestPluginTesting")
-		static TArray<AActor*> GetSkeletonMeshVertex(UObject* selfPointer, FString targetFolder);
+		UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get animated mesh vertex test", Keywords = " sample test testing"), Category = "TestPluginTesting")
+		static TArray<AActor*> GetAnimatedMeshVertex(UObject* selfPointer, FString targetFolder);
+
 		UFUNCTION(BlueprintCallable, meta = (DisplayName = "Update cache data", Keywords = " sample test testing"), Category = "TestPluginTesting")
 		static bool UpadateCacheData(UObject* selfPointer, FString TargetFolder);
 		UFUNCTION(BlueprintCallable, meta = (DisplayName = "Release cache data", Keywords = " sample test testing"), Category = "TestPluginTesting")

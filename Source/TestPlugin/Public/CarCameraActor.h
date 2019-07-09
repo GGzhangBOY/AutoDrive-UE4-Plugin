@@ -20,11 +20,11 @@ class TESTPLUGIN_API ACarCameraActor : public AActor
 {
 	GENERATED_BODY()
 private:
-	USceneCaptureComponent2D* captureComponent;
-	void SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget);
 	CacheDataInterface cacheController;
 public:	
 	// Sets default values for this actor's properties
+	USceneCaptureComponent2D* captureComponent;
+	void SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget, CacheDataInterface &in_cache_contoller, int current_num, int num_camera);
 	UPROPERTY(EditAnywhere)
 		FString randerPath = "";
 	ACarCameraActor();

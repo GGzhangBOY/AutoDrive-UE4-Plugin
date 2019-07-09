@@ -18,6 +18,12 @@ enum MESH_TYPE
 	MESH_OBJ = 1
 };
 
+struct Mesh_Info
+{
+	std::string mesh_Name;
+	FVector mesh_position;
+};
+
 
 class TESTPLUGIN_API MeshFactory
 {
@@ -30,7 +36,7 @@ private:
 
 	std::vector<std::string> vertexPosRGBHolder;
 
-	std::vector<std::string> sceneSMNames;
+	std::vector<Mesh_Info> sceneSMNames;
 
 	std::string targetFolder;
 
@@ -42,7 +48,7 @@ private:
 
 	FVector camera_LookAt;
 
-	bool isSkeletal;
+	bool isAnimated;
 
 	int vertexNum;
 
@@ -55,7 +61,7 @@ private:
 public:
 	MeshFactory();
 
-	void Init(std::string targetFolder, std::string currentMeshName, std::string optix_renderer_path, int vertexNum, int triangleNum, MESH_TYPE makeType = MESH_TYPE::MESH_PLY, bool isSkeletal = false);
+	void Init(std::string targetFolder, std::string currentMeshName, FVector mesh_position, std::string optix_renderer_path, int vertexNum, int triangleNum, MESH_TYPE makeType = MESH_TYPE::MESH_PLY, bool isAnimated = false);
 
 	void makeHeader();
 

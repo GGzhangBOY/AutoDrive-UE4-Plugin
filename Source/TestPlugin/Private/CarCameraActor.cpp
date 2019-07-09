@@ -22,10 +22,10 @@ void ACarCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	SaveRenderTargetToSharedMemary(this->captureComponent->TextureTarget);
+	//SaveRenderTargetToSharedMemary(this->captureComponent->TextureTarget);
 }
 
-void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget)
+void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget, CacheDataInterface &in_cache_controller, int current_num, int num_camera)
 {
 	FTextureRenderTargetResource* RTResource = InRenderTarget->GameThread_GetRenderTargetResource();
 	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
@@ -45,7 +45,7 @@ void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InR
 		i++;
 	}
 	
-	cacheController.writeCurrentCameraCache(pixel_array, i);
+	in_cache_controller.writeCurrentCameraCache(pixel_array, i, current_num, num_camera);
 }
 
 void ACarCameraActor::releaseActorCameraCache()

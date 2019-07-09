@@ -9,14 +9,14 @@ MeshFactory::MeshFactory()
 {
 }
 
-void MeshFactory::Init(std::string targetFolder, std::string currentMeshName, std::string optix_renderer_path, int vertexNum, int triangleNum, MESH_TYPE makeType, bool isSkeletal)
+void MeshFactory::Init(std::string targetFolder, std::string currentMeshName, FVector mesh_position, std::string optix_renderer_path, int vertexNum, int triangleNum, MESH_TYPE makeType, bool isAnimated)
 {
 	std::string file_name;
 	std::string scene_file_name;
 	this->makeType = makeType;
 	this->currentMeshName = currentMeshName;
-	this->sceneSMNames.push_back(currentMeshName);
-	this->isSkeletal = isSkeletal;
+	this->sceneSMNames.push_back(Mesh_Info{currentMeshName, mesh_position});
+	this->isAnimated = isAnimated;
 	this->vertexNum = vertexNum;
 	this->vertexTriganleNum = triangleNum;
 	this->optix_renderer_path = optix_renderer_path;
@@ -27,13 +27,13 @@ void MeshFactory::Init(std::string targetFolder, std::string currentMeshName, st
 		file_name = targetFolder + "\\" + currentMeshName + ".ply";
 	else
 		file_name = targetFolder + "\\" + currentMeshName + ".obj";
-	if(!isSkeletal)
-	scene_file_name = targetFolder + "\\" + "exportscene" + ".scene";
+	if(!isAnimated)
+		scene_file_name = targetFolder + "\\" + "exportscene" + ".scene";
 	else
-	scene_file_name = targetFolder + "\\" + "exportskeletal" + ".scene";
+		scene_file_name = targetFolder + "\\" + "exportAnimated" + ".scene";
 
-	this->current_mesh = std::ofstream(file_name.c_str(), std::ios::ate);
-	this->scene_file = std::ofstream(scene_file_name.c_str(), std::ios::ate);
+	this->current_mesh = std::ofstream(file_name.c_str(), std::ios::trunc);
+	this->scene_file = std::ofstream(scene_file_name.c_str(), std::ios::trunc);
 
 	makeHeader();
 }
@@ -64,7 +64,7 @@ void MeshFactory::serializeVertexData(FVector position, FVector color)
 	if (this->makeType == MESH_TYPE::MESH_PLY)
 	{
 
-		sprintf(str_holder, "%f %f %f %d %d %d\n", position.X, -position.Y, position.Z, int(color.X), int(color.Y), int(color.Z));
+		sprintf(str_holder, "%f %f %f %d %d %d\n", position.X, position.Y, position.Z, int(color.X), int(color.Y), int(color.Z));
 		toPut = std::string(str_holder);
 		this->vertexPosRGBHolder.push_back(toPut);
 	}
@@ -115,21 +115,22 @@ void MeshFactory::makeSceneFile()
 		std::string current_name;
 		for (int i = 0; i < this->sceneSMNames.size(); i++)
 		{
-			current_name = sceneSMNames[i] + ".ply";
-			this->scene_file << "mesh\n{\n" << "file " << current_name << "\nmaterial default\n}\n";
+			current_name = sceneSMNames[i].mesh_Name + ".ply";
+			this->scene_file << "mesh\n{\n" << "file " << current_name << "\n"<<"position "<< sceneSMNames[i].mesh_position.X<<" "
+				<<sceneSMNames[i].mesh_position.Y <<" "<< sceneSMNames[i].mesh_position.Z<<"\n" << "num " << i << "\n" <<"material default\n}\n";
 		}
 	}
 	//test light add to the scene
-	if (!this->isSkeletal)
+	if (!this->isAnimated)
 	{
 		this->scene_file << "light\n{\ntype Sphere\nposition 0.320673 0.027337 0.228975\nv1  0.320673 0.476 0.228975\nv2  0.320673 0.027337 - 0.1375\nemission 4.0 4.0 4.0\n}\n";
 		this->scene_file << "light\n{\ntype Sphere\nposition 0.230128 0.50385 0.267372\nv1 - 0.230128 0.50385 0.267372\nv2 0.230128 0.50385 - 0.1927\nemission 4.0 4.0 4.0\n}\n";
 
 		//test start camera add to the scene
 		std::stringstream sstream,sstream1,sstream2;
-		sstream << "position " << this->camera_Position.X << " " << -this->camera_Position.Y << " " << this->camera_Position.Z;
+		sstream << "position " << this->camera_Position.X << " " << this->camera_Position.Y << " " << this->camera_Position.Z;
 		sstream1 << "rotation " << this->camera_Rotation.X << " " << this->camera_Rotation.Y << " " << this->camera_Rotation.Z;//roll picth raw
-		sstream2 << "lookat " << this->camera_LookAt.X << " " << -this->camera_LookAt.Y << " " << this->camera_LookAt.Z;
+		sstream2 << "lookat " << this->camera_LookAt.X << " " << this->camera_LookAt.Y << " " << this->camera_LookAt.Z;
 		this->scene_file << "CameraPosition\n{\n"<<sstream.str()<<"\n"<<sstream1.str()<<"\n"<<sstream2.str()<<"\n}\n";
 
 	}
@@ -141,10 +142,10 @@ std::vector<FString> MeshFactory::startRenderParams()
 	std::vector<FString> out_params;
 	FString scene_path;
 
-	if(!isSkeletal)
+	if(!isAnimated)
 		scene_path = FString(this->targetFolder.c_str()) + "\\" + "exportscene" + ".scene";
 	else
-		scene_path = FString(this->targetFolder.c_str()) + "\\" + "exportskeletal" + ".scene";
+		scene_path = FString(this->targetFolder.c_str()) + "\\" + "exportanimated" + ".scene";
 
 	FString randerer_path = FString(this->optix_renderer_path.c_str());
 	FString command_line = FString(" -scene " + scene_path);

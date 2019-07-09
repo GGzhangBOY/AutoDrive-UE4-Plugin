@@ -233,7 +233,7 @@ TArray<AActor*> UTestPluginBPLibrary::GetStaticMeshVertex(UObject* worldPointer,
 			
 			if (i == 0)
 			{
-				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), TCHAR_TO_UTF8(*optixRendererPath),
+				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*optixRendererPath),
 					StaticMesh->RenderData->LODResources[0].VertexBuffers.PositionVertexBuffer.GetNumVertices(), StaticMesh->RenderData->LODResources[0].GetNumTriangles());
 			}
 			if (VertexBuffer)
@@ -245,7 +245,7 @@ TArray<AActor*> UTestPluginBPLibrary::GetStaticMeshVertex(UObject* worldPointer,
 
 				for (int32 Index = 0; Index < VertexCount; Index++)
 				{
-					const FVector WorldSpaceVertexLocation = (*iter)->GetActorLocation() + (*iter)->GetTransform().TransformVector(VertexBuffer->VertexPosition(Index));
+					const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(VertexBuffer->VertexPosition(Index));
 					
 					const FVector4 VertexNormal = StaticMesh->RenderData->LODResources[0].VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(static_cast<uint32>(Index));
 
@@ -285,11 +285,11 @@ TArray<AActor*> UTestPluginBPLibrary::GetStaticMeshVertex(UObject* worldPointer,
 	return T_output_array;
 }
 
-TArray<AActor*> UTestPluginBPLibrary::GetSkeletonMeshVertex(UObject * worldPointer, FString targetFolder)
+TArray<AActor*> UTestPluginBPLibrary::GetAnimatedMeshVertex(UObject * worldPointer, FString targetFolder)
 {
 	TArray<AActor*> T_output_array;
 	std::vector<std::vector<FVector>> Vertex_output;
-	UGameplayStatics::GetAllActorsOfClass(worldPointer, ASkeletalMeshActor::StaticClass(), T_output_array);
+	UGameplayStatics::GetAllActorsWithTag(worldPointer, "AnimationActor", T_output_array);
 	MeshFactory meshFactory;
 	UE_LOG(LogTemp, Warning, TEXT("Num skeletal mesh find %d "),T_output_array.Num());
 	for (TArray<AActor*>::TConstIterator iter = T_output_array.CreateConstIterator(); iter; iter++)
@@ -307,7 +307,7 @@ TArray<AActor*> UTestPluginBPLibrary::GetSkeletonMeshVertex(UObject * worldPoint
 
 			if (i == 0)
 			{
-				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), TCHAR_TO_UTF8(*FString("")),
+				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*FString("")),
 					SkeletalMeshVertexBuffer->GetNumVertices(), SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].GetTotalFaces(), MESH_TYPE::MESH_PLY,true);
 			}
 			
@@ -317,7 +317,7 @@ TArray<AActor*> UTestPluginBPLibrary::GetSkeletonMeshVertex(UObject * worldPoint
 
 				for (int32 Index = 0; Index < VertexCount; Index++)
 				{
-					const FVector WorldSpaceVertexLocation = (*iter)->GetActorLocation() + (*iter)->GetTransform().TransformVector(SkeletalMeshVertexBuffer->VertexPosition(Index));
+					const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(SkeletalMeshVertexBuffer->VertexPosition(Index));
 
 					meshFactory.serializeVertexData(WorldSpaceVertexLocation, FVector(0, 0, 0));
 					Per_vertex_index.push_back(WorldSpaceVertexLocation);
