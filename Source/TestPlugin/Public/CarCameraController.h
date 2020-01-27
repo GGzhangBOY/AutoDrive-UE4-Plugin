@@ -8,6 +8,8 @@
 #include "CarCameraActor.h"
 #include "CacheDataInterface.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "CameraMuiltThreadTask.h"
 #include "CarCameraController.generated.h"
 
 UCLASS()

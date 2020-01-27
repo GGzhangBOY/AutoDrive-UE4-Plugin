@@ -22,30 +22,29 @@ void ACarCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	//SaveRenderTargetToSharedMemary(this->captureComponent->TextureTarget);
 }
 
-void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget, CacheDataInterface &in_cache_controller, int current_num, int num_camera)
+void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget, CacheDataInterface &in_cache_controller, int current_num, int num_camera, FTextureRenderTargetResource* RTResource)
 {
-	FTextureRenderTargetResource* RTResource = InRenderTarget->GameThread_GetRenderTargetResource();
 	FReadSurfaceDataFlags ReadPixelFlags(RCM_UNorm);
 	ReadPixelFlags.SetLinearToGamma(true);
 	int pic_width = InRenderTarget->GetSurfaceWidth();
 	int pic_height = InRenderTarget->GetSurfaceHeight();
 	pixel_structure* pixel_array = new pixel_structure[pic_width*pic_height];
-	TArray<FColor> OutBMP;
+	FColor* OutBMP = new FColor[pic_width*pic_height];
 
-	RTResource->ReadPixels(OutBMP, ReadPixelFlags);
-
-	int i = 0;
-	for (FColor& color : OutBMP)
+	//RTResource->ReadPixels(OutBMP, ReadPixelFlags);
+	RTResource->ReadPixelsPtr(OutBMP);
+	memcpy(pixel_array, OutBMP, sizeof(FColor)*pic_width*pic_height);
+	delete[] OutBMP;
+	//int i = 0;
+	/*for (FColor& color : OutBMP)
 	{
 		color.A = 255;
-		pixel_array[i] = pixel_structure{ color.R, color.G, color.B, color.A, pic_height, pic_height };
+		pixel_array[i] = pixel_structure{ char(color.R), char(color.G), char(color.B)};
 		i++;
-	}
-	
-	in_cache_controller.writeCurrentCameraCache(pixel_array, i, current_num, num_camera);
+	}*/
+	in_cache_controller.writeCurrentCameraCache(pixel_array, pic_width*pic_height, pic_width, pic_height, current_num, num_camera);
 }
 
 void ACarCameraActor::releaseActorCameraCache()

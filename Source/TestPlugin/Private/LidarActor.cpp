@@ -25,20 +25,16 @@ void ALidarActor::BeginPlay()
 void ALidarActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	UpadateLidarCacheData(GetWorld());
 }
 
-void ALidarActor::UpadateCacheData(UObject* worldPointer)
+void ALidarActor::UpadateLidarCacheData(UObject* worldPointer)
 {
 	if (this->randerPath == "")
 	{
 		UE_LOG(LogTemp, Warning, TEXT("The rander data folder has't set please set before using the tick funtion!"))
 			return;
 	}
-	if (cacheController == NULL)
-	{
-		cacheController = new CacheDataInterface(this,this->randerPath);
-	}
-	cacheController->writeCurrentData(worldPointer);
+	this->LidarCacheController.writeCurrentData(worldPointer,this);
 }
 

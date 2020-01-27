@@ -352,13 +352,14 @@ TArray<AActor*> UTestPluginBPLibrary::GetAnimatedMeshVertex(UObject * worldPoint
 	return T_output_array;
 }
 
+/*Abandoned*/
 bool UTestPluginBPLibrary::UpadateCacheData(UObject * selfPointer,FString TargetFolder)
 {
 	if (cacheController == NULL)
 	{
 		cacheController = new CacheDataInterface(selfPointer, TargetFolder);
 	}
-	cacheController->writeCurrentData(selfPointer);
+	cacheController->writeCurrentData(selfPointer,NULL);
 
 	return true;
 }

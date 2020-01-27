@@ -8,12 +8,11 @@ CacheDataInterface::CacheDataInterface(UObject* in_worldPointer, FString in_targ
 	this->worldPointer = in_worldPointer;
 }
 
-void CacheDataInterface::writeCurrentData(UObject* in_worldPointer)
+void CacheDataInterface::writeCurrentData(UObject* in_worldPointer, AActor* in_LidarActor)
 {
 	FVector CameraPosition, CameraRotation;
-	
-	CameraPosition = GWorld->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorLocation();
-	CameraRotation = GWorld->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorForwardVector();
+	CameraPosition = in_LidarActor->GetActorLocation();
+	CameraRotation = in_LidarActor->GetActorForwardVector();
 
 	FHitResult hHitResult;
 	GWorld->GetWorld()->LineTraceSingleByChannel(hHitResult, CameraPosition, CameraPosition + CameraRotation * 100000, ECC_Visibility);
@@ -65,6 +64,17 @@ void CacheDataInterface::writeCurrentData(UObject* in_worldPointer)
 	memcpy(SMaddress, &length, sizeof(int));
 	memcpy(SMaddress_1, sstream3.str().c_str(), length * sizeof(char));
 	
+	//SM send directly to the ArgContainer
+	std::stringstream sstream5;
+	sstream5 << CameraPosition.X << "\n" << CameraPosition.Y << "\n" << CameraPosition.Z;
+	sharedMemaryManager.CreateMappedMemory("CarCameraInfoLength", sizeof(int));
+	this->SMCarInfoLenAddress = sharedMemaryManager.GetMappedMemoryData();
+	int carInfoLen = sstream5.str().length();
+	sharedMemaryManager.CreateMappedMemory("CarCameraInfo", carInfoLen * sizeof(char));
+	this->SMCarInfoDataAddress = sharedMemaryManager.GetMappedMemoryData();
+
+	memcpy(SMCarInfoLenAddress, &carInfoLen, sizeof(int));
+	memcpy(SMCarInfoDataAddress, sstream5.str().c_str(), carInfoLen * sizeof(char));
 	
 	//discarded way, using file to transfer data
 	/*std::ofstream cacheFile(*this->targetFile, std::ios::trunc);
@@ -76,7 +86,7 @@ void CacheDataInterface::writeCurrentData(UObject* in_worldPointer)
 	}*/
 }
 
-void CacheDataInterface::writeCurrentCameraCache(pixel_structure* Data, int num_pixels, int current_num, int num_camera, std::string in_SM)
+void CacheDataInterface::writeCurrentCameraCache(pixel_structure* Data, int num_pixels, int pic_width, int pic_height, int current_num, int num_camera, std::string in_SM)
 {
 	
 	if (this->hasRequestSM2 == false)
@@ -88,12 +98,14 @@ void CacheDataInterface::writeCurrentCameraCache(pixel_structure* Data, int num_
 			ss_buf << in_SM << i;
 			strcpy(info_list[i].data_block_name, ss_buf.str().c_str());
 			info_list[i].info_length = num_camera;
+			info_list[i].width = pic_width;
+			info_list[i].height = pic_height;
 		}
 		while (true)
 		{
 			sharedMemaryManager.CreateMappedMemory("CameraInfo", sizeof(camera_sm_info)*num_camera);
 			this->SMaddress_2 = this->sharedMemaryManager.GetMappedMemoryData();
-			memcpy(this->SMaddress_2, &info_list, sizeof(camera_sm_info)*num_camera);
+			memcpy(this->SMaddress_2, info_list, sizeof(camera_sm_info)*num_camera);
 			for (int i = 0; i < num_camera; i++)
 			{
 				sharedMemaryManager.CreateMappedMemory(info_list[i].data_block_name, num_pixels * sizeof(pixel_structure));

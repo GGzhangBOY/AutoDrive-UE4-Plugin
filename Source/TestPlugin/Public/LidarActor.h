@@ -20,7 +20,6 @@ public:
 		FString randerPath="";
 	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get pointer", Keywords = " sample test testing"), Category = "LidarActor")
 		static void LidarOn(UObject* worldPointer);
-	CacheDataInterface* cacheController = NULL;
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,5 +30,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	void UpadateCacheData(UObject* worldPointer);
+	CacheDataInterface LidarCacheController;
+
+	void UpadateLidarCacheData(UObject* worldPointer);
 };
