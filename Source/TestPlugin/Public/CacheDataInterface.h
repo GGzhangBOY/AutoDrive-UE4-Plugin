@@ -50,6 +50,21 @@ struct animated_actor_structure
 	float position_z;
 };
 
+struct car_info
+{
+	float speed;
+	float car_position_x;
+	float car_position_y;
+	float car_position_z;
+};
+
+struct AlgInformation
+{
+	float steeringMechanism_TuringRate;
+	float brakingMechanism_BrakingRate;
+	float engineMechanism_ThrottleRate;
+	char message[200];
+};
 
 class ALidarActor;
 class TESTPLUGIN_API CacheDataInterface
@@ -65,7 +80,8 @@ private:
 	void* SMaddress_1;
 	void* SMaddress_2;
 	void* SMCarInfoLenAddress;
-	void* SMCarInfoDataAddress;
+	void* SMCarInfoDataAddress;//Used twice watch out
+	void* SMAlgContainerAddress;
 	std::vector<void*> SMaddress_3;
 	TArray<AActor*> Actors;
 	
@@ -75,6 +91,8 @@ public:
 	void writeCurrentData(UObject* in_worldPointer, AActor* in_LidarActor);
 	void writeCurrentCameraCache(pixel_structure* Data, int num_pixels, int current_num, int pic_width, int pic_height, int num_camera = 0, std::string in_SM = "Camera");
 	void writeCurrentAnimatedActorCache(animated_actor_structure* Data, int current_num, int num_actors, std::string in_SM = "AActor");
+	void writeCurrentCarInformation(car_info* Data);
+	AlgInformation* getAlgContainerInformation();
 	void releaseCurrentCameraCache();
 	~CacheDataInterface();
 };

@@ -205,18 +205,20 @@ TArray<FGroundTruthInfo> UTestPluginBPLibrary::CalculateBound(UObject* SelfPoint
 TArray<AActor*> UTestPluginBPLibrary::GetStaticMeshVertex(UObject* worldPointer, FString targetFolder, FString optixRendererPath)
 {
 	TArray<AActor*> T_output_array;
+	TArray<AActor*> T_road_spline_actors;
 	std::vector<std::vector<FVector>> Vertex_output;
 	UGameplayStatics::GetAllActorsOfClass(worldPointer, AStaticMeshActor::StaticClass(), T_output_array);
+	UGameplayStatics::GetAllActorsWithTag(worldPointer, "SplineRoad", T_road_spline_actors);
+	T_output_array.Append(T_road_spline_actors);
 	MeshFactory meshFactory;
 	FVector CameraPosition, CameraRotation;
 
-	CameraPosition = worldPointer->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorLocation();
-	CameraRotation = worldPointer->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorForwardVector();
-
+	CameraPosition = worldPointer->GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	CameraRotation = worldPointer->GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorForwardVector();
 	FHitResult hHitResult;
 	worldPointer->GetWorld()->LineTraceSingleByChannel(hHitResult,CameraPosition,CameraPosition+CameraRotation*100000, ECC_Visibility);
 	FVector hitPosition = hHitResult.ImpactPoint;
-	FRotator c_rotator = worldPointer->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorRotation();
+	FRotator c_rotator = worldPointer->GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorRotation();
 	CameraRotation = FVector(c_rotator.Roll,c_rotator.Pitch,c_rotator.Yaw);
 	UE_LOG(LogTemp, Warning, TEXT("CameraRotation: %s"),*(CameraRotation.ToString()))
 	for (TArray<AActor*>::TConstIterator iter = T_output_array.CreateConstIterator(); iter; iter++)
@@ -229,53 +231,56 @@ TArray<AActor*> UTestPluginBPLibrary::GetStaticMeshVertex(UObject* worldPointer,
 		{
 			UStaticMeshComponent* StaticMeshComponent = Components[i];
 			UStaticMesh* StaticMesh = StaticMeshComponent->GetStaticMesh();
-			FPositionVertexBuffer* VertexBuffer = &(StaticMesh->RenderData->LODResources[0].VertexBuffers.PositionVertexBuffer);
-			
-			if (i == 0)
+			if (StaticMesh)
 			{
-				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*optixRendererPath),
-					StaticMesh->RenderData->LODResources[0].VertexBuffers.PositionVertexBuffer.GetNumVertices(), StaticMesh->RenderData->LODResources[0].GetNumTriangles());
-			}
-			if (VertexBuffer)
-			{
-				const int32 VertexCount = VertexBuffer->GetNumVertices();
-				TArray<FColor> VertexColors;
-				StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.Init(VertexCount);
-				StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.GetVertexColors(VertexColors);
+				FPositionVertexBuffer* VertexBuffer = &(StaticMesh->RenderData->LODResources[0].VertexBuffers.PositionVertexBuffer);
 
-				for (int32 Index = 0; Index < VertexCount; Index++)
+				if (i == 0)
 				{
-					const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(VertexBuffer->VertexPosition(Index));
-					
-					const FVector4 VertexNormal = StaticMesh->RenderData->LODResources[0].VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(static_cast<uint32>(Index));
-
-					meshFactory.serializeVertexData(WorldSpaceVertexLocation, FVector(VertexColors[Index].R, VertexColors[Index].G, VertexColors[Index].B));
-					Per_vertex_index.push_back(WorldSpaceVertexLocation);
+					meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*optixRendererPath),
+						StaticMesh->RenderData->LODResources[0].VertexBuffers.PositionVertexBuffer.GetNumVertices(), StaticMesh->RenderData->LODResources[0].GetNumTriangles());
 				}
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Mesh name : %s %d %d %d"), *((*iter)->GetFName().ToString()), VertexColors.Num(), VertexCount, StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.GetNumVertices()));
-				TArray<uint32> Indices;  // << Result saved here
-				const FRawStaticIndexBuffer& IndexBuffer = StaticMesh->RenderData->LODResources[0].IndexBuffer;
-				IndexBuffer.GetCopy(Indices);
-				//calculate the triangle vertex postion
-				int NumIndices = Indices.Num();
-				for (int i = 0; i < NumIndices; i += 3) {
-					uint32 i0 = Indices[i + 0];
-					uint32 i1 = Indices[i + 1];
-					uint32 i2 = Indices[i + 2];
+				if (VertexBuffer)
+				{
+					const int32 VertexCount = VertexBuffer->GetNumVertices();
+					TArray<FColor> VertexColors;
+					StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.Init(VertexCount);
+					StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.GetVertexColors(VertexColors);
 
-					const FVector& v0 = Per_vertex_index[i0];
-					const FVector& v1 = Per_vertex_index[i1];
-					const FVector& v2 = Per_vertex_index[i2];
+					for (int32 Index = 0; Index < VertexCount; Index++)
+					{
+						const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(VertexBuffer->VertexPosition(Index));
 
-					meshFactory.serializeTriangleData(FVector(i0, i1, i2));
+						const FVector4 VertexNormal = StaticMesh->RenderData->LODResources[0].VertexBuffers.StaticMeshVertexBuffer.VertexTangentZ(static_cast<uint32>(Index));
+
+						meshFactory.serializeVertexData(WorldSpaceVertexLocation, FVector(VertexColors[Index].R, VertexColors[Index].G, VertexColors[Index].B));
+						Per_vertex_index.push_back(WorldSpaceVertexLocation);
+					}
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Mesh name : %s %d %d %d"), *((*iter)->GetFName().ToString()), VertexColors.Num(), VertexCount, StaticMesh->RenderData->LODResources[0].VertexBuffers.ColorVertexBuffer.GetNumVertices()));
+					TArray<uint32> Indices;  // << Result saved here
+					const FRawStaticIndexBuffer& IndexBuffer = StaticMesh->RenderData->LODResources[0].IndexBuffer;
+					IndexBuffer.GetCopy(Indices);
+					//calculate the triangle vertex postion
+					int NumIndices = Indices.Num();
+					for (int i = 0; i < NumIndices; i += 3) {
+						uint32 i0 = Indices[i + 0];
+						uint32 i1 = Indices[i + 1];
+						uint32 i2 = Indices[i + 2];
+
+						const FVector& v0 = Per_vertex_index[i0];
+						const FVector& v1 = Per_vertex_index[i1];
+						const FVector& v2 = Per_vertex_index[i2];
+
+						meshFactory.serializeTriangleData(FVector(i0, i1, i2));
+					}
+					UE_LOG(LogTemp, Warning, TEXT("NumIndices: %d NumTrangle:%d "), NumIndices, StaticMesh->RenderData->LODResources[0].GetNumTriangles());
+
+
 				}
-				UE_LOG(LogTemp, Warning, TEXT("NumIndices: %d NumTrangle:%d "),NumIndices, StaticMesh->RenderData->LODResources[0].GetNumTriangles());
-
-
+				Vertex_output.push_back(Per_vertex_index);
+				meshFactory.serializeFactoryData();
 			}
-			Vertex_output.push_back(Per_vertex_index);
 		}
-		meshFactory.serializeFactoryData();
 	}
 	meshFactory.setPlayerCameraPosition(CameraPosition,CameraRotation,hitPosition);
 	meshFactory.makeSceneFile();
@@ -303,49 +308,52 @@ TArray<AActor*> UTestPluginBPLibrary::GetAnimatedMeshVertex(UObject * worldPoint
 			TArray<FBoneVertInfo> fBoneInfo;
 			USkeletalMeshComponent* SkeletalMeshComponent = Components[i];
 			USkeletalMesh* SkeletalMesh = SkeletalMeshComponent->SkeletalMesh;
-			FPositionVertexBuffer* SkeletalMeshVertexBuffer = &(SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].StaticVertexBuffers.PositionVertexBuffer);
-
-			if (i == 0)
+			if (SkeletalMesh)
 			{
-				meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*FString("")),
-					SkeletalMeshVertexBuffer->GetNumVertices(), SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].GetTotalFaces(), MESH_TYPE::MESH_PLY,true);
-			}
-			
-			if (SkeletalMeshVertexBuffer)
-			{
-				const int32 VertexCount = SkeletalMeshVertexBuffer->GetNumVertices();
+				FPositionVertexBuffer* SkeletalMeshVertexBuffer = &(SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].StaticVertexBuffers.PositionVertexBuffer);
 
-				for (int32 Index = 0; Index < VertexCount; Index++)
+				if (i == 0)
 				{
-					const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(SkeletalMeshVertexBuffer->VertexPosition(Index));
-
-					meshFactory.serializeVertexData(WorldSpaceVertexLocation, FVector(0, 0, 0));
-					Per_vertex_index.push_back(WorldSpaceVertexLocation);
+					meshFactory.Init(TCHAR_TO_UTF8(*targetFolder), TCHAR_TO_UTF8(*((*iter)->GetFName().ToString())), (*iter)->GetActorLocation(), TCHAR_TO_UTF8(*FString("")),
+						SkeletalMeshVertexBuffer->GetNumVertices(), SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].GetTotalFaces(), MESH_TYPE::MESH_PLY, true);
 				}
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Skeletal mesh name : %s %d"), *((*iter)->GetFName().ToString()), SkeletalMeshVertexBuffer->GetNumVertices()));
-				TArray<uint32> Indices;
 
-				SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].MultiSizeIndexContainer.GetIndexBuffer(Indices);
-				//calculate the triangle vertex postion
-				int NumIndices = Indices.Num();
-				for (int i = 0; i < NumIndices; i += 3) {
-					uint32 i0 = Indices[i + 0];
-					uint32 i1 = Indices[i + 1];
-					uint32 i2 = Indices[i + 2];
+				if (SkeletalMeshVertexBuffer)
+				{
+					const int32 VertexCount = SkeletalMeshVertexBuffer->GetNumVertices();
 
-					const FVector& v0 = Per_vertex_index[i0];
-					const FVector& v1 = Per_vertex_index[i1];
-					const FVector& v2 = Per_vertex_index[i2];
+					for (int32 Index = 0; Index < VertexCount; Index++)
+					{
+						const FVector WorldSpaceVertexLocation = /*(*iter)->GetActorLocation() + */(*iter)->GetTransform().TransformVector(SkeletalMeshVertexBuffer->VertexPosition(Index));
 
-					meshFactory.serializeTriangleData(FVector(i0, i1, i2));
+						meshFactory.serializeVertexData(WorldSpaceVertexLocation, FVector(0, 0, 0));
+						Per_vertex_index.push_back(WorldSpaceVertexLocation);
+					}
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Skeletal mesh name : %s %d"), *((*iter)->GetFName().ToString()), SkeletalMeshVertexBuffer->GetNumVertices()));
+					TArray<uint32> Indices;
+
+					SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].MultiSizeIndexContainer.GetIndexBuffer(Indices);
+					//calculate the triangle vertex postion
+					int NumIndices = Indices.Num();
+					for (int i = 0; i < NumIndices; i += 3) {
+						uint32 i0 = Indices[i + 0];
+						uint32 i1 = Indices[i + 1];
+						uint32 i2 = Indices[i + 2];
+
+						const FVector& v0 = Per_vertex_index[i0];
+						const FVector& v1 = Per_vertex_index[i1];
+						const FVector& v2 = Per_vertex_index[i2];
+
+						meshFactory.serializeTriangleData(FVector(i0, i1, i2));
+					}
+					UE_LOG(LogTemp, Warning, TEXT("NumIndices: %d NumTrangle:%d "), NumIndices, SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].GetTotalFaces());
+
+
 				}
-				UE_LOG(LogTemp, Warning, TEXT("NumIndices: %d NumTrangle:%d "), NumIndices, SkeletalMeshComponent->GetSkeletalMeshRenderData()->LODRenderData[0].GetTotalFaces());
-
-
+				Vertex_output.push_back(Per_vertex_index);
+				meshFactory.serializeFactoryData();
 			}
-			Vertex_output.push_back(Per_vertex_index);
 		}
-		meshFactory.serializeFactoryData();
 	}
 	meshFactory.makeSceneFile();
 		

@@ -15,9 +15,9 @@ void CacheDataInterface::writeCurrentData(UObject* in_worldPointer, AActor* in_L
 	CameraRotation = in_LidarActor->GetActorForwardVector();
 
 	FHitResult hHitResult;
-	GWorld->GetWorld()->LineTraceSingleByChannel(hHitResult, CameraPosition, CameraPosition + CameraRotation * 100000, ECC_Visibility);
+	in_worldPointer->GetWorld()->LineTraceSingleByChannel(hHitResult, CameraPosition, CameraPosition + CameraRotation * 100000, ECC_Visibility);
 	FVector hitPosition = hHitResult.ImpactPoint;
-	FRotator c_rotator = GWorld->GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorRotation();
+	FRotator c_rotator = in_worldPointer->GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorRotation();
 	CameraRotation = FVector(c_rotator.Roll, c_rotator.Pitch, c_rotator.Yaw);
 
 	std::stringstream sstream, sstream1, sstream2, sstream3;
@@ -44,7 +44,7 @@ void CacheDataInterface::writeCurrentData(UObject* in_worldPointer, AActor* in_L
 	}
 	sstream3 << sstream4.str();
 	int length = sstream3.str().length();
-	UE_LOG(LogTemp, Warning, TEXT("Text length %d"),length)
+	//UE_LOG(LogTemp, Warning, TEXT("Text length %d"),length)
 	if (!this->hasRequestSM)
 	{
 		while (true)
@@ -165,9 +165,30 @@ void CacheDataInterface::writeCurrentAnimatedActorCache(animated_actor_structure
 	}
 
 
-	memcpy(this->SMaddress_3[current_num], Data, sizeof(pixel_structure));
+	//memcpy(this->SMaddress_3[current_num], Data, sizeof(pixel_structure));
 
 	delete Data;
+}
+
+void CacheDataInterface::writeCurrentCarInformation(car_info* Data)
+{
+	sharedMemaryManager.CreateMappedMemory("UE4CarInfo", sizeof(car_info));
+	this->SMCarInfoDataAddress = this->sharedMemaryManager.GetMappedMemoryData();
+	memcpy(this->SMCarInfoDataAddress, Data, sizeof(car_info));
+}
+
+AlgInformation* CacheDataInterface::getAlgContainerInformation()
+{
+	AlgInformation* returnInformation = new AlgInformation();
+	sharedMemaryManager.ReadExistingMappedMemory("AlgContainerOrder", sizeof(AlgInformation));
+	this->SMAlgContainerAddress = this->sharedMemaryManager.GetExistingMappedMemoryData();
+	if (this->SMAlgContainerAddress)
+	{
+		AlgInformation* pBuf = (AlgInformation*)this->SMAlgContainerAddress;
+		memcpy(returnInformation, pBuf, sizeof(AlgInformation));
+		return returnInformation;
+	}
+	return returnInformation;
 }
 
 void CacheDataInterface::releaseCurrentCameraCache()

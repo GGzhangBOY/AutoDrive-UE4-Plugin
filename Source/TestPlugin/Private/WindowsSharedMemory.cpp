@@ -49,6 +49,43 @@ void* WindowsSharedMemory::GetMappedMemoryData()
 	return SharedMemoryData;
 }
 
+bool WindowsSharedMemory::ReadExistingMappedMemory(const FString & sharedMemoryName, size_t shareMemorySize)
+{
+	this->SMsize = shareMemorySize;
+	//TODO
+	SharedMemoryHandle = OpenFileMapping(
+		FILE_MAP_READ, // File Mapping Security and Access Rights
+		0,
+		*sharedMemoryName);
+
+	if (!SharedMemoryHandle)
+	{
+		UE_LOG(LogClass, Log, TEXT("Existing Memory-mapped file does not exist."));
+		return false;
+	}
+	this->handlerCollection.push_back(SharedMemoryHandle);
+	return true;
+}
+
+void * WindowsSharedMemory::GetExistingMappedMemoryData()
+{
+	SharedMemoryData = (void*)MapViewOfFile(SharedMemoryHandle,
+		FILE_MAP_READ,
+		0, 0,
+		0);
+
+	if (!SharedMemoryData)
+	{
+		UE_LOG(LogClass, Log, TEXT("Memory-mapped data does not exist."));
+		return NULL;
+	}
+
+	this->mapedFileCollection.push_back(SharedMemoryData);
+	return SharedMemoryData;
+}
+
+
+
 void WindowsSharedMemory::CloseSharedMemory()
 {
 	for (int i = 0; i < this->mapedFileCollection.size(); i++)

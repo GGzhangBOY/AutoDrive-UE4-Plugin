@@ -8,7 +8,7 @@
 #include <fstream>
 #include "MeshFactory.h"
 #include "CacheDataInterface.h"
-#include "Engine.h"
+#include "Engine.h" 
 #include "Runtime/Engine/Public/ImageUtils.h"
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Runtime/ImageWrapper/Public/IImageWrapper.h"
@@ -38,12 +38,31 @@ struct FGroundTruthInfo
 	GENERATED_BODY()
 
 		// 用UPROPERTY包裹，可以更方便的在蓝图中使用
-		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		FVector2D TopLeft;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		FVector2D WidthHeight;
 
+};
+
+USTRUCT(BlueprintType)
+struct FCarMechanismControlOrder
+{
+	GENERATED_BODY()
+
+		// 用UPROPERTY包裹，可以更方便的在蓝图中使用
+		UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float steeringMechanism_TuringRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float brakingMechanism_BrakingRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float engineMechanism_ThrottleRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FString message;
 };
 
 

@@ -17,6 +17,8 @@ public:
 
 	bool CreateMappedMemory(const FString& sharedMemoryName, size_t shareMemorySize);
 	void* GetMappedMemoryData();
+	bool ReadExistingMappedMemory(const FString& sharedMemoryName, size_t shareMemorySize);
+	void* GetExistingMappedMemoryData();
 	void CloseSharedMemory();
 
 private:
