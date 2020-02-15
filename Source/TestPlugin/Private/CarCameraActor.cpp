@@ -47,6 +47,11 @@ void ACarCameraActor::SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InR
 	in_cache_controller.writeCurrentCameraCache(pixel_array, pic_width*pic_height, pic_width, pic_height, current_num, num_camera);
 }
 
+void ACarCameraActor::SaveMarkedTargetToSharedMemary(CacheDataInterface &in_cache_controller, TArray<FVector2D>& GT_Results_TopLeft, TArray<FVector2D>& GT_Results_WidthHeight, int current_num, int num_camera)
+{
+	in_cache_controller.writeCurrentCarBoundingBoxInfo(GT_Results_TopLeft, GT_Results_WidthHeight, current_num, num_camera);
+}
+
 void ACarCameraActor::releaseActorCameraCache()
 {
 	this->cacheController.releaseCurrentCameraCache();

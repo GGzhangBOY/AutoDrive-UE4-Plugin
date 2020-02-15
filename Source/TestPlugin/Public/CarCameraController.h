@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "TestPluginBPLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
@@ -10,6 +11,7 @@
 #include "Runtime/Engine/Classes/Engine/World.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "CameraMuiltThreadTask.h"
+#include "RHI.h"
 #include "CarCameraController.generated.h"
 
 UCLASS()
@@ -32,4 +34,5 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void GetCameraBoundingBox(USceneCaptureComponent2D* Target, TArray<FVector2D>& GT_Results_TopLeft, TArray<FVector2D>& GT_Results_WidthHeight);
 };

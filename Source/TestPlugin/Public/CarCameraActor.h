@@ -25,8 +25,11 @@ public:
 	// Sets default values for this actor's properties
 	USceneCaptureComponent2D* captureComponent;
 	void SaveRenderTargetToSharedMemary(UTextureRenderTarget2D* InRenderTarget, CacheDataInterface &in_cache_controller, int current_num, int num_camera, FTextureRenderTargetResource* RTResource);
+	void SaveMarkedTargetToSharedMemary(CacheDataInterface &in_cache_controller, TArray<FVector2D>& GT_Results_TopLeft, TArray<FVector2D>& GT_Results_WidthHeight, int current_num, int num_camera);
 	UPROPERTY(EditAnywhere)
 		FString randerPath = "";
+	UPROPERTY(EditAnywhere)
+		bool enableDatasetMaking = false;
 	ACarCameraActor();
 	void releaseActorCameraCache();
 

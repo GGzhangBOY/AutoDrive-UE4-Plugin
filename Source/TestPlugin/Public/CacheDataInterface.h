@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <stdio.h>
 #include "Engine.h"
 #include "Runtime/Engine/Classes/GameFramework/Actor.h"
@@ -66,6 +67,8 @@ struct AlgInformation
 	char message[200];
 };
 
+
+
 class ALidarActor;
 class TESTPLUGIN_API CacheDataInterface
 {
@@ -82,6 +85,8 @@ private:
 	void* SMCarInfoLenAddress;
 	void* SMCarInfoDataAddress;//Used twice watch out
 	void* SMAlgContainerAddress;
+	void* SMGTInfoAddress;
+	char transferInfo[10000];
 	std::vector<void*> SMaddress_3;
 	TArray<AActor*> Actors;
 	
@@ -92,6 +97,7 @@ public:
 	void writeCurrentCameraCache(pixel_structure* Data, int num_pixels, int current_num, int pic_width, int pic_height, int num_camera = 0, std::string in_SM = "Camera");
 	void writeCurrentAnimatedActorCache(animated_actor_structure* Data, int current_num, int num_actors, std::string in_SM = "AActor");
 	void writeCurrentCarInformation(car_info* Data);
+	void writeCurrentCarBoundingBoxInfo(TArray<FVector2D>& GT_Results_TopLeft, TArray<FVector2D>& GT_Results_WidthHeight, int current_num, int num_camera);
 	AlgInformation* getAlgContainerInformation();
 	void releaseCurrentCameraCache();
 	~CacheDataInterface();

@@ -177,6 +177,26 @@ void CacheDataInterface::writeCurrentCarInformation(car_info* Data)
 	memcpy(this->SMCarInfoDataAddress, Data, sizeof(car_info));
 }
 
+void CacheDataInterface::writeCurrentCarBoundingBoxInfo(TArray<FVector2D>& GT_Results_TopLeft, TArray<FVector2D>& GT_Results_WidthHeight, int current_num, int num_camera)
+{
+	std::stringstream sstream;
+	sstream << "Camera" << current_num;
+	for (int i = 0; i < GT_Results_TopLeft.Num(); i++)
+	{
+		sstream << " " << GT_Results_TopLeft[i].X << "," << GT_Results_TopLeft[i].Y << ";" << GT_Results_WidthHeight[i].X << "," << GT_Results_WidthHeight[i].Y;
+	}
+	sstream << "\n";
+	strcat(this->transferInfo, sstream.str().c_str());
+
+	if (current_num+1 == num_camera)
+	{
+		sharedMemaryManager.CreateMappedMemory("GT_Info", sizeof(char)*10000);
+		this->SMGTInfoAddress = this->sharedMemaryManager.GetMappedMemoryData();
+		memcpy(this->SMGTInfoAddress, this->transferInfo, sizeof(char)*10000);
+		strcpy(this->transferInfo, "");
+	}
+}
+
 AlgInformation* CacheDataInterface::getAlgContainerInformation()
 {
 	AlgInformation* returnInformation = new AlgInformation();
