@@ -1,4 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// THIS FILE IS PART OF UE4 LIDAR SIMULATE AND AUTO DRIVE SIMULATE PROJECT 
+// THIS PROGRAM IS FREE SOFTWARE, IS LICENSED UNDER MIT
+// Copyright(c) Bowei Zhang
+
 
 #pragma once
 
@@ -18,7 +21,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		FString randerPath="";
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get pointer", Keywords = " sample test testing"), Category = "LidarActor")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Lidar", Keywords = " sample test testing"), Category = "LidarActor")
 		static void LidarOn(UObject* worldPointer);
 
 protected:

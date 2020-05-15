@@ -1,4 +1,7 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
+// THIS FILE IS PART OF UE4 LIDAR SIMULATE AND AUTO DRIVE SIMULATE PROJECT 
+// THIS PROGRAM IS FREE SOFTWARE, IS LICENSED UNDER MIT
+// Copyright(c) Bowei Zhang
 
 #include "TestPluginBPLibrary.h"
 #include "ImageUtils.h"
